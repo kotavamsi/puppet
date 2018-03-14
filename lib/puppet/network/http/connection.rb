@@ -5,6 +5,7 @@ require 'puppet/ssl/validator'
 require 'puppet/network/http'
 require 'uri'
 require 'date'
+require 'zlib'
 
 module Puppet::Network::HTTP
 
@@ -112,6 +113,15 @@ module Puppet::Network::HTTP
     # @!macro common_options
     # @api public
     def put(path, data, headers = nil, options = {})
+      if options[:gzip_http_payload]
+        gzip_headers = headers.merge("Content-Encoding" => "gzip")
+        gzip_data = Zlib::Deflate.deflate(data)
+        request = Net::HTTP::Put.new(path, gzip_headers)
+        request.body = gzip_data
+        response = do_request(request, options)
+        return response if response.code.to_i != 417
+      end
+
       request = Net::HTTP::Put.new(path, headers)
       request.body = data
       do_request(request, options)

@@ -232,7 +232,6 @@ class Puppet::Indirector::REST < Puppet::Indirector::Terminus
   end
 
   def save(request)
-    raise ArgumentError, _("PUT does not accept options") unless request.options.empty?
 
     response = do_request(request) do |req|
       http_put(req, IndirectedRoutes.request_to_uri(req), req.instance.render, headers.merge({ "Content-Type" => req.instance.mime }))
